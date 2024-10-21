@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "vue-cli-service build",
-    "deploy": "gh-pages -d dist"
+  "build": "vue-cli-service build",
+  "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "core-js": "^3.8.3",
-    "reconnecting-websocket": "^4.4.0",
     "vue": "^3.2.13"
   },
   "devDependencies": {

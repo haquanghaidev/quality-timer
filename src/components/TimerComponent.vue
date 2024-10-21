@@ -22,8 +22,7 @@
         seconds: 0,
         timer: null,
         isRunning: false,
-        isPaused: false,
-        socket: null, // WebSocket client instance
+        isPaused: false
       };
     },
     computed: {
@@ -31,41 +30,38 @@
         return {
           hours: this.padTime(this.hours),
           minutes: this.padTime(this.minutes),
-          seconds: this.padTime(this.seconds),
+          seconds: this.padTime(this.seconds)
         };
-      },
+      }
     },
     methods: {
       startTimer() {
         this.isRunning = true;
         this.isPaused = false;
   
-        // Notify the WebSocket server to start the timer
-        this.socket.send(JSON.stringify({ action: 'start' }));
+        // Gọi hàm tăng thời gian ngay lập tức
+        this.incrementTime();
+  
+        // Sau đó, setInterval để tiếp tục đếm sau mỗi giây
+        this.timer = setInterval(() => {
+          this.incrementTime();
+        }, 1000);
       },
       pauseTimer() {
         this.isRunning = false;
         this.isPaused = true;
         clearInterval(this.timer);
-  
-        // Notify the WebSocket server to pause the timer
-        this.socket.send(JSON.stringify({ action: 'pause' }));
       },
       resumeTimer() {
         this.isRunning = true;
         this.isPaused = false;
-  
-        // Notify the WebSocket server to resume the timer
-        this.socket.send(JSON.stringify({ action: 'resume' }));
+        this.startTimer();
       },
       stopTimer() {
         this.isRunning = false;
         this.isPaused = false;
         clearInterval(this.timer);
         this.resetTime();
-  
-        // Notify the WebSocket server to stop the timer
-        this.socket.send(JSON.stringify({ action: 'stop' }));
       },
       incrementTime() {
         this.seconds++;
@@ -85,39 +81,11 @@
       },
       padTime(value) {
         return value.toString().padStart(2, '0');
-      },
-    },
-    mounted() {
-      // Initialize WebSocket connection
-      this.socket = new WebSocket('ws://localhost:8080'); // Update with your WebSocket server URL
-  
-      // Listen for messages from the WebSocket server
-      this.socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.time) {
-          // Update the timer state based on the WebSocket message
-          this.hours = Math.floor(data.time / 3600);
-          this.minutes = Math.floor((data.time % 3600) / 60);
-          this.seconds = data.time % 60;
-        }
-  
-        if (data.isRunning !== undefined) {
-          this.isRunning = data.isRunning;
-          this.isPaused = data.isPaused;
-        }
-      };
-  
-      // Handle WebSocket connection close
-      this.socket.onclose = () => {
-        console.log('WebSocket connection closed');
-      };
-    },
-    beforeUnmount() {
-      // Clean up WebSocket connection
-      if (this.socket) {
-        this.socket.close();
       }
     },
+    beforeUnmount() {
+      clearInterval(this.timer);
+    }
   };
   </script>
   
